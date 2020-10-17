@@ -1,0 +1,5 @@
+/.vscode
+/dataset
+/authors
+dev_*.rb
+Gemfile.lock
