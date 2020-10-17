@@ -39,7 +39,7 @@ module Rush
     end
 
     def add_node(ip, port)
-      uuid = probe_node(ip, port)
+      uuid = probe_node(ip, port).to_s
       return if uuid.nil?
 
       if @nodes.key?(uuid)
@@ -52,11 +52,18 @@ module Rush
     end
 
     def remove_node(uuid)
+      uuid = uuid.to_s
+      return unless @nodes.key?(uuid)
+
+      disconnect_node(uuid)
       @nodes.delete(uuid)
       @logger.debug("Remove Node #{uuid}")
     end
 
     def connect_node(uuid)
+      uuid = uuid.to_s
+      return unless @nodes.key?(uuid)
+
       ip, port = @nodes[uuid]
       socket = create_socket(ip, port)
       return if socket.nil?
@@ -66,6 +73,9 @@ module Rush
     end
 
     def disconnect_node(uuid)
+      uuid = uuid.to_s
+      return unless @sockets.key?(uuid)
+
       @sockets[uuid].close
       @sockets.delete(uuid)
       @logger.debug("Disconnect from Node #{uuid}")
