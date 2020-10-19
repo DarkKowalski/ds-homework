@@ -2,6 +2,7 @@
 
 require_relative 'rush/logging'
 require_relative 'rush/file_id'
+require_relative 'rush/pg'
 require_relative 'rush/parser'
 
 require_relative 'rush/controller'

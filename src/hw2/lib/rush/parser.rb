@@ -2,6 +2,7 @@
 
 require 'fileutils'
 require 'nokogiri'
+require 'json'
 
 module Rush
   class Parser
@@ -37,18 +38,37 @@ module Rush
     end
 
     def split(dirpath = 'authors')
-      FileUtils.mkdir_p(dirpath)
+      placeholder(dirpath)
+      pg = Array.new(Rush::PG::ALL_PG) { [] }
       authors.each do |name, articles|
-        id = Rush::FileId.hex(name)
-        filename = "#{id}.txt"
-        path = File.join(dirpath, filename)
-        File.open(path, 'w') do |f|
-          f.puts "# Author: #{name}"
-          f.puts "# Articles: #{articles.size}"
-          articles.each { |article| f.puts article }
-        end
-        @logger.debug "Store #{name} as #{filename}"
+        file_id = Rush::FileId.hex(name)
+        pg_id = Rush::PG.id(file_id)
+        hash = { id: file_id, name: name, article_num: articles.size, articles: articles }
+        pg[pg_id].push(hash)
+        @logger.debug("Put #{hash} into PG #{pg_id}")
       end
+
+      each_pg_file do |pg_id, path|
+        json = JSON.pretty_generate(pg[pg_id])
+        File.open(path, 'w') {|f| f.puts json}
+        @logger.debug("Write #{path}")
+      end
+    end
+
+    private
+
+    def each_pg_file(dirpath = 'authors')
+      Rush::PG::ALL_PG.times do |pg_id|
+        filename = "data_#{pg_id}.json"
+        path = File.join(dirpath, filename)
+        yield(pg_id, path)
+      end
+    end
+
+    def placeholder(dirpath = 'authors')
+      # Generate placeholders
+      FileUtils.mkdir_p(dirpath)
+      each_pg_file { |_pg_id, path| FileUtils.touch path }
     end
   end
 end
