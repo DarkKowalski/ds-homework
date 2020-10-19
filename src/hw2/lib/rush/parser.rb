@@ -50,7 +50,7 @@ module Rush
 
       each_pg_file do |pg_id, path|
         json = JSON.pretty_generate(pg[pg_id])
-        File.open(path, 'w') {|f| f.puts json}
+        File.open(path, 'w') { |f| f.puts json }
         @logger.debug("Write #{path}")
       end
     end

@@ -7,3 +7,5 @@ require_relative 'rush/parser'
 
 require_relative 'rush/controller'
 require_relative 'rush/node'
+
+require_relative 'rush/cli'
