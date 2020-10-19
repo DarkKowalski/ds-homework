@@ -11,7 +11,7 @@ module Rush
       @options = {}
       @parser = OptionParser.new do |opts|
         opts.banner = 'Usage: rush [options]'
-        opts.on('-s', '--split [FILE]', "Split dblp.xml into #{Rush::PG::ALL_PG} files", String) do |v|
+        opts.on('-s', '--split [FILE]', "Split dblp.xml into #{Rush::ALL_PG} files", String) do |v|
           @options[:mode] = :split
           @options[:file] = v
         end

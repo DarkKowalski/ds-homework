@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative 'rush/const'
+
 require_relative 'rush/logging'
 require_relative 'rush/file_id'
 require_relative 'rush/pg'

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'socket'
+require 'json'
 
 module Rush
   class Node
@@ -12,7 +13,8 @@ module Rush
     end
 
     def probe(client)
-      client.puts @uuid
+      response = {uuid: @uuid}.to_json
+      client.send(response, 0)
       @logger.info("Answer probe #{client.addr}")
     end
 
@@ -21,13 +23,18 @@ module Rush
         client = @server.accept
 
         # get raw text from TCPSocket
-        raw = client.gets
-        next if raw.nil?
-
+        raw = client.recv(MAX_RECV)
         @logger.debug("#{client} gets #{raw.chomp}")
 
-        command = raw.to_s&.chomp
-        case command.downcase
+        hash = nil
+        begin
+          hash = JSON.parse(raw)
+        rescue StandardError => e
+          @logger.error(e.message.to_s)
+        end
+        next if hash.nil? || hash['command'].nil?
+
+        case hash['command'].downcase
         when 'probe'
           probe(client)
         else

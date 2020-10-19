@@ -39,7 +39,7 @@ module Rush
 
     def split(dirpath = 'authors')
       placeholder(dirpath)
-      pg = Array.new(Rush::PG::ALL_PG) { [] }
+      pg = Array.new(Rush::ALL_PG) { [] }
       authors.each do |name, articles|
         file_id = Rush::FileId.hex(name)
         pg_id = Rush::PG.id(file_id)
@@ -58,7 +58,7 @@ module Rush
     private
 
     def each_pg_file(dirpath = 'authors')
-      Rush::PG::ALL_PG.times do |pg_id|
+      Rush::ALL_PG.times do |pg_id|
         filename = "data_#{pg_id}.json"
         path = File.join(dirpath, filename)
         yield(pg_id, path)

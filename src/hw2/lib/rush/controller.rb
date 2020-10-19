@@ -2,7 +2,7 @@
 
 require 'socket'
 require 'timeout'
-
+require 'json'
 module Rush
   class Controller
     attr_reader :nodes, :sockets
@@ -25,19 +25,28 @@ module Rush
     def probe_socket(socket)
       @logger.debug("Probe socket #{socket}")
 
-      node_uuid = nil
+      request = { command: 'probe' }.to_json
+      response = nil
       begin
         Timeout.timeout(10) do
-          socket.puts 'probe'
-          node_uuid = socket.gets&.chomp
+          socket.send(request, 0)
+          response = socket.recv(MAX_RECV)
         end
       rescue Timeout::Error => e
         @logger.warn("Failed to probe #{socket}")
         @logger.error(e.message.to_s)
         return nil
       end
+      
+      uuid = nil
+      begin
+        hash = JSON.parse(response)
+        uuid = hash["uuid"]
+      rescue StandardError => e
+        @logger.error("#{e.message}")
+      end
 
-      node_uuid
+      uuid
     end
 
     def probe_node(ip, port)
