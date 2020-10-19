@@ -13,7 +13,7 @@ module Rush
     end
 
     def probe(client)
-      response = {uuid: @uuid}.to_json
+      response = { uuid: @uuid}.to_json
       client.send(response, 0)
       @logger.info("Answer probe #{client.addr}")
     end

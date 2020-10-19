@@ -37,13 +37,13 @@ module Rush
         @logger.error(e.message.to_s)
         return nil
       end
-      
+
       uuid = nil
       begin
         hash = JSON.parse(response)
-        uuid = hash["uuid"]
+        uuid = hash['uuid']
       rescue StandardError => e
-        @logger.error("#{e.message}")
+        @logger.error(e.message.to_s)
       end
 
       uuid
