@@ -17,10 +17,6 @@ module Rush
           @options[:output] ||= 'authors'
         end
 
-        opts.on('-o', '--out [DIR]', 'Indicate the output directory', String) do |v|
-          @options[:output] = v
-        end
-
         opts.on('-d', '--debug', 'Set logging level to debug', String) do
           @logger.level = 'debug'
         end
@@ -32,8 +28,7 @@ module Rush
       case @options[:mode]
       when :split
         xml = @options[:file]
-        output = @options[:output]
-        Rush::Parser.new.open(xml).split(output)
+        Rush::Parser.new.open(xml).split
       else
         puts @parser
       end
