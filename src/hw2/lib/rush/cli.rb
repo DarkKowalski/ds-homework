@@ -14,7 +14,6 @@ module Rush
         opts.on('-s', '--split [FILE]', "Split dblp.xml into #{Rush::PG::ALL_PG} files", String) do |v|
           @options[:mode] = :split
           @options[:file] = v
-          @options[:output] ||= 'authors'
         end
 
         opts.on('-d', '--debug', 'Set logging level to debug', String) do
