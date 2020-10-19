@@ -13,9 +13,23 @@ module Rush
     end
 
     def probe(client)
-      response = { uuid: @uuid}.to_json
+      response = { uuid: @uuid }.to_json
       client.send(response, 0)
       @logger.info("Answer probe #{client.addr}")
+    end
+
+    def recv_file(hash, client)
+      return if hash['size'].nil?
+
+      accept = hash['size'].to_i < MAX_RECV
+      response = {uuid: @uuid, accept: "#{accept}"}.to_json
+      client.send(response, 0)
+      return unless accept == true
+
+      raw = client.recv(Rush::MAX_RECV)
+      @logger.debug("Reviced compressed file, size #{raw.size}")
+
+      file = Rush::Compression.decompress(raw)
     end
 
     def listen
@@ -37,8 +51,10 @@ module Rush
         case hash['command'].downcase
         when 'probe'
           probe(client)
+        when 'send_file'
+          recv_file(hash, client)
         else
-          @logger.warn("Invalid command #{command}")
+          @logger.warn("Invalid command #{hash['command']}")
         end
         client.close
       end

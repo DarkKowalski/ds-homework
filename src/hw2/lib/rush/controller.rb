@@ -22,31 +22,60 @@ module Rush
       nil
     end
 
+    def timeout_request(time, request, socket)
+      if socket.nil?
+        @logger.warn("Invalid socket")
+        return nil
+      end
+
+      response = nil
+      begin
+        Timeout.timeout(time) do
+          socket.send(request.to_s, 0)
+          response = socket.recv(MAX_RECV)
+        end
+      rescue Timeout::Error => e
+        @logger.error(e.message.to_s)
+        return nil
+      end
+      response
+    end
+
+    def parse_json(_json)
+      hash = nil
+      begin
+        hash = JSON.parse(_json)
+      rescue StandardError => e
+        @logger.error(e.message.to_s)
+        return nil
+      end
+      hash
+    end
+
     def probe_socket(socket)
       @logger.debug("Probe socket #{socket}")
 
       request = { command: 'probe' }.to_json
-      response = nil
-      begin
-        Timeout.timeout(10) do
-          socket.send(request, 0)
-          response = socket.recv(MAX_RECV)
-        end
-      rescue Timeout::Error => e
-        @logger.warn("Failed to probe #{socket}")
-        @logger.error(e.message.to_s)
-        return nil
-      end
+      response = timeout_request(10, request, socket)
 
-      uuid = nil
-      begin
-        hash = JSON.parse(response)
-        uuid = hash['uuid']
-      rescue StandardError => e
-        @logger.error(e.message.to_s)
-      end
+      hash = parse_json(response)
+      return nil if hash.nil?
 
-      uuid
+      hash['uuid']
+    end
+
+    def send_file(localpath, socket)
+      file = Rush::Compression.compress(File.read(localpath))
+      request = { command: 'send_file', localpath: localpath.to_s, size: file.size.to_s }.to_json
+      response = timeout_request(10, request, socket)
+
+      hash = parse_json(response)
+      return nil if hash.nil?
+      @logger.debug("Node #{hash['uuid']} responds #{response}")
+      return nil unless hash['accept']
+
+      @logger.debug("Send file #{localpath} to Node #{hash['uuid']}")
+      timeout_request(10, file, socket)
     end
 
     def probe_node(ip, port)
