@@ -1,5 +1,5 @@
 /.vscode
 /dataset
 /authors
-dev_*.rb
+dev_*
 Gemfile.lock
