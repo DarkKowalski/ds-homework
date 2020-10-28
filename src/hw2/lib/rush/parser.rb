@@ -59,7 +59,7 @@ module Rush
 
     def each_pg_file(dirpath = 'authors')
       Rush::ALL_PG.times do |pg_id|
-        filename = "data_#{pg_id}.json"
+        filename = "#{pg_id}.json"
         path = File.join(dirpath, filename)
         yield(pg_id, path)
       end

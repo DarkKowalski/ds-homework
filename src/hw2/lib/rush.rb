@@ -10,6 +10,7 @@ require_relative 'rush/logging'
 # Hash
 require_relative 'rush/file_id'
 require_relative 'rush/pg'
+require_relative 'rush/crush'
 
 # Parser
 require_relative 'rush/parser'

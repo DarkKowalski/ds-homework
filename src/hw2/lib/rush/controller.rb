@@ -24,7 +24,7 @@ module Rush
 
     def timeout_request(time, request, socket)
       if socket.nil?
-        @logger.warn("Invalid socket")
+        @logger.warn('Invalid socket')
         return nil
       end
 
@@ -64,13 +64,14 @@ module Rush
       hash['uuid']
     end
 
-    def send_file(localpath, socket)
+    def send_file(localpath, pg_id, socket)
       file = Rush::Compression.compress(File.read(localpath))
-      request = { command: 'send_file', localpath: localpath.to_s, size: file.size.to_s }.to_json
+      request = { command: 'send_file', localpath: localpath.to_s, size: file.size.to_s, pg: pg_id}.to_json
       response = timeout_request(10, request, socket)
 
       hash = parse_json(response)
       return nil if hash.nil?
+
       @logger.debug("Node #{hash['uuid']} responds #{response}")
       return nil unless hash['accept']
 
@@ -153,6 +154,31 @@ module Rush
           next
         end
         probe_node(*ip_port)
+      end
+    end
+
+    # pick a OSD
+    def pick_osd(pg_id)
+      Rush::Crush.pick(pg_id, @nodes, Rush::REPICA)
+    end
+
+    # distribute data files
+    def distribute(localpath)
+      data = []
+      Dir.entries(localpath).each do |f|
+        path = File.join(localpath, f)
+        data.push(path) if File.file?(path)
+      end
+
+      data.each do |d|
+        pg_id = File.basename(d, ".json").to_i
+        osd = pick_osd(pg_id)
+        puts "try send pg = #{pg_id}, path = #{d} to #{osd}"
+        osd.each do |o|
+          connect_node(o)
+          send_file(d, pg_id, @sockets[o])
+          disconnect_node(o)
+        end
       end
     end
   end

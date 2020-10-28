@@ -22,7 +22,8 @@ module Rush
       return if hash['size'].nil?
 
       accept = hash['size'].to_i < MAX_RECV
-      response = {uuid: @uuid, accept: "#{accept}"}.to_json
+      pg_id = hash['pg'].to_i
+      response = { uuid: @uuid, accept: accept.to_s}.to_json
       client.send(response, 0)
       return unless accept == true
 
@@ -30,6 +31,10 @@ module Rush
       @logger.debug("Reviced compressed file, size #{raw.size}")
 
       file = Rush::Compression.decompress(raw)
+
+      FileUtils.mkdir_p "./saved_data/#{pg_id}"
+      File.write("./saved_data/#{pg_id}/data.json", file)
+
     end
 
     def listen
