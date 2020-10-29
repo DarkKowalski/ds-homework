@@ -58,13 +58,25 @@ module Rush
       id = hash['id']
       pg_id = hash['pg'].to_i
 
+      count = 0
+      list = []
       begin
         file = File.read("./saved_data/#{pg_id}/data.json")
         parsed = JSON.parse(file)
-        puts parsed
+        parsed.each do |record|
+          if record['id'] == id
+            count = record['article_num']
+            list = record['articles']
+            @logger.debug("Found id = #{id}")
+            break
+          end
+        end
       rescue StandardError => e
         @logger.error("#{e.message}")
       end
+
+      response = { uuid: @uuid, count: count, list: list}.to_json
+      client.send(response, 0)
     end
   
     def listen

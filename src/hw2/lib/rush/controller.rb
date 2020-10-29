@@ -91,10 +91,10 @@ module Rush
       response = timeout_request(10, request, socket)
       return nil if response.nil?
 
+      hash = parse_json(response)
       @logger.debug("Node #{hash['uuid']} responds #{response}")
-      return nil unless hash['found']
 
-      return hash['count']
+      hash
     end
 
     def probe_node(ip, port)
