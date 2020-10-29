@@ -67,7 +67,7 @@ module Rush
 
     def send_file(localpath, pg_id, socket)
       file = Rush::Compression.compress(File.read(localpath))
-      request = { command: 'send_file', localpath: localpath.to_s, size: file.size.to_s, pg: pg_id}.to_json
+      request = { command: 'send_file', localpath: localpath.to_s, size: file.size.to_s, pg: pg_id }.to_json
       response = timeout_request(10, request, socket)
       return nil if response.nil?
 
@@ -87,7 +87,7 @@ module Rush
     end
 
     def query_node(id, pg_id, socket)
-      request = { command: 'query', id: id, pg: pg_id}.to_json
+      request = { command: 'query', id: id, pg: pg_id }.to_json
       response = timeout_request(10, request, socket)
       return nil if response.nil?
 
@@ -190,7 +190,7 @@ module Rush
       data.sort!
       @logger.debug("Distribute data = #{data}")
       data.each do |d|
-        pg_id = File.basename(d, ".json").to_i
+        pg_id = File.basename(d, '.json').to_i
         osd = pick_osd(pg_id)
         @logger.debug "try send pg = #{pg_id}, path = #{d} to #{osd}"
         osd.each do |o|
@@ -206,7 +206,7 @@ module Rush
       pg_id = Rush::PG.id(id)
       osd = pick_osd(pg_id)
       @logger.debug("Query #{name}, id = #{id}, pg = #{pg_id}, osd = #{osd}")
-      count = nil;
+      count = nil
       osd.each do |o|
         connect_node(o)
         count = query_node(id, pg_id, @sockets[o])
@@ -215,6 +215,43 @@ module Rush
       end
 
       count
+    end
+
+    def start
+      valid = ['- distribute [path]', '- add [host] [port]', '- query [name]', '- info', '- quit']
+      puts valid
+      loop do
+        print 'controller $ '
+        input = gets.chomp.downcase
+        @logger.debug("User Input: #{input}")
+        command = input.split(' ').to_a
+
+        case command[0]
+        when 'add'
+          ip = command[1]
+          port = command[2]
+          result = add_node(ip, port)
+          puts 'Done' unless result.nil?
+        when 'query'
+          if @nodes.empty?
+            puts 'You are not connected to any node'
+            next
+          end
+          name = command.drop(1).join(' ')
+          result = query(name)
+          unless result.nil?
+            puts "Total: #{result['count']}"
+            puts result['list']
+          end
+        when 'info'
+          puts "Nodes: #{@nodes}"
+        when 'quit'
+          puts 'Quit!'
+          break
+        else
+          puts valid
+        end
+      end
     end
   end
 end

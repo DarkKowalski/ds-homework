@@ -6,7 +6,7 @@ module Rush
       return nil if nodes.size < num
 
       result = []
-      keys = nodes.keys.to_a
+      keys = nodes.keys.to_a.sort
       rand = Random.new(pg_id).rand(0..keys.size)
 
       num.times do |n|

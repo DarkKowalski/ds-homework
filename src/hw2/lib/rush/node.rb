@@ -24,7 +24,7 @@ module Rush
       expected_size = hash['size'].to_i
       accept = expected_size < MAX_RECV
       pg_id = hash['pg'].to_i
-      response = { uuid: @uuid, accept: accept.to_s}.to_json
+      response = { uuid: @uuid, accept: accept.to_s }.to_json
       client.send(response, 0)
       return unless accept == true
 
@@ -34,11 +34,11 @@ module Rush
         @logger.debug("Reviced compressed file, size #{recved.size}")
         @logger.debug("expected_size = #{expected_size}, received_size = #{raw.size}")
         if raw.size == expected_size
-          @logger.debug("Break")
+          @logger.debug('Break')
           break
         end
         client.send('', 0)
-        @logger.debug("Continue")
+        @logger.debug('Continue')
       end
 
       begin
@@ -46,10 +46,10 @@ module Rush
         FileUtils.mkdir_p "./saved_data/#{pg_id}"
         File.write("./saved_data/#{pg_id}/data.json", file)
       rescue StandardError => e
-        @logger.error("#{e.message}")
+        @logger.error(e.message.to_s)
       end
 
-      response = { uuid: @uuid, success: 'true'}.to_json
+      response = { uuid: @uuid, success: 'true' }.to_json
       client.send(response, 0)
       @logger.debug("Successfully received pg = #{pg_id}, raw_size = #{raw.size}")
     end
@@ -64,21 +64,21 @@ module Rush
         file = File.read("./saved_data/#{pg_id}/data.json")
         parsed = JSON.parse(file)
         parsed.each do |record|
-          if record['id'] == id
-            count = record['article_num']
-            list = record['articles']
-            @logger.debug("Found id = #{id}")
-            break
-          end
+          next unless record['id'] == id
+
+          count = record['article_num']
+          list = record['articles']
+          @logger.debug("Found id = #{id}")
+          break
         end
       rescue StandardError => e
-        @logger.error("#{e.message}")
+        @logger.error(e.message.to_s)
       end
 
-      response = { uuid: @uuid, count: count, list: list}.to_json
+      response = { uuid: @uuid, count: count, list: list }.to_json
       client.send(response, 0)
     end
-  
+
     def listen
       loop do
         client = @server.accept

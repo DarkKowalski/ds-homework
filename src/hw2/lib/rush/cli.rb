@@ -16,6 +16,20 @@ module Rush
           @options[:file] = v
         end
 
+        opts.on('-c', '--controller', 'Run as the controller', String) do
+          @options[:mode] = :controller
+        end
+
+        opts.on('-n', '--node [PORT]', 'Run as the node', String) do |v|
+          @options[:mode] = :node
+          @options[:port] = v
+        end
+
+        opts.on('-u', '--uuid [UUID]', 'Set node UUID', String) do |v|
+          @options[:mode] = :node
+          @options[:uuid] = v
+        end
+
         opts.on('-d', '--debug', 'Set logging level to debug', String) do
           @logger.level = 'debug'
         end
@@ -25,6 +39,12 @@ module Rush
     def start
       @parser.parse!
       case @options[:mode]
+      when :controller
+        Rush::Controller.new.start
+      when :node
+        uuid = @options[:uuid]
+        port = @options[:port]
+        Rush::Node.new(uuid, port).listen
       when :split
         xml = @options[:file]
         Rush::Parser.new.open(xml).split
