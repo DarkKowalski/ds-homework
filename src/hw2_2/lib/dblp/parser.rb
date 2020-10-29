@@ -27,7 +27,7 @@ module DBLP
       articles.each do |article|
         rand = Random.new.rand(0...DBLP::SPLIT_NUM)
 
-        path = File.join("splited","#{rand}.xml")
+        path = File.join('splited', "#{rand}.xml")
         unless File.file?(path)
           File.open(path, 'w') do |f|
             f.puts '<dblp>'
@@ -41,13 +41,12 @@ module DBLP
 
       Dir.entries('splited').each do |e|
         path = File.join('splited', e)
-        if File.file?(path)
-          File.open(path, 'a') do |f|
-            f.puts '</dblp>'
-          end
+        next unless File.file?(path)
+
+        File.open(path, 'a') do |f|
+          f.puts '</dblp>'
         end
       end
     end
-
   end
 end

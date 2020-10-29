@@ -44,7 +44,7 @@ module DBLP
 
       begin
         file = DBLP::Compression.decompress(raw)
-        
+
         FileUtils.mkdir_p './saved_data/main'
         FileUtils.mkdir_p './saved_data/backup'
         if backup
@@ -68,9 +68,7 @@ module DBLP
       count = 0
       begin
         base = './saved_data/main'
-        if backup
-          base = './saved_data/backup'
-        end
+        base = './saved_data/backup' if backup
 
         data = []
         file_ids = []
@@ -95,7 +93,6 @@ module DBLP
       response = { uuid: @uuid, count: count, backup: backup, file_id: file_ids }.to_json
       client.send(response, 0)
     end
-
 
     def listen
       loop do

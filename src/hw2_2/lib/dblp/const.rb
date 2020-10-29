@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module DBLP
   REPLICA = 2
   SPLIT_NUM = 64

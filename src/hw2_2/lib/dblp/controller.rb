@@ -69,7 +69,7 @@ module DBLP
 
     def send_file(localpath, file_id, backup, socket)
       file = DBLP::Compression.compress(File.read(localpath))
-      request = { command: 'send_file', localpath: localpath.to_s, size: file.size.to_s, file_id: file_id, backup: backup}.to_json
+      request = { command: 'send_file', localpath: localpath.to_s, size: file.size.to_s, file_id: file_id, backup: backup }.to_json
       response = timeout_request(10, request, socket)
       return nil if response.nil?
 
@@ -87,7 +87,7 @@ module DBLP
       @logger.debug("Successfully sent #{localpath}")
       file.size
     end
-  
+
     def query_node(name, backup, socket)
       request = { command: 'query', name: name, backup: backup }.to_json
       response = timeout_request(10, request, socket)
@@ -186,7 +186,7 @@ module DBLP
       DBLP::REPLICA.times do |n|
         index = (rand + n) % keys.size
         result.push(keys[index])
-      end 
+      end
 
       result
     end
@@ -222,7 +222,7 @@ module DBLP
       count = 0
       @nodes.each_key do |uuid|
         connect_node(uuid)
-        response= query_node(name, false, @sockets[uuid])
+        response = query_node(name, false, @sockets[uuid])
         if response.nil?
           backup_id = @backup[uuid.to_s]
           @logger.debug("#{uuid} down, use backup #{backup_id}")
@@ -274,9 +274,7 @@ module DBLP
 
             name = command.drop(1).join(' ')
             result = query(name)
-            unless result.nil?
-              puts "Total: #{result}"
-            end
+            puts "Total: #{result}" unless result.nil?
           when 'info'
             puts "Nodes: #{@nodes}"
             puts "Backup: #{@backup}"
