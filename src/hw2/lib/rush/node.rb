@@ -21,7 +21,8 @@ module Rush
     def recv_file(hash, client)
       return if hash['size'].nil?
 
-      accept = hash['size'].to_i < MAX_RECV
+      expected_size = hash['size'].to_i
+      accept = expected_size < MAX_RECV
       pg_id = hash['pg'].to_i
       response = { uuid: @uuid, accept: accept.to_s}.to_json
       client.send(response, 0)
@@ -29,17 +30,16 @@ module Rush
 
       raw = ''
       while recved = client.recv(Rush::MAX_RECV)
-        @logger.debug("Reviced compressed file, size #{recved.size}")
-        break if recved.size == 0
-        response = { uuid: @uuid, continue: 'true'}.to_json
-        client.send(response, 0)
-        @logger.debug("Continue")
         raw += recved
+        @logger.debug("Reviced compressed file, size #{recved.size}")
+        @logger.debug("expected_size = #{expected_size}, received_size = #{raw.size}")
+        if raw.size == expected_size
+          @logger.debug("Break")
+          break
+        end
+        client.send('', 0)
+        @logger.debug("Continue")
       end
-
-      response = { uuid: @uuid, success: 'true'}.to_json
-      client.send(response, 0)
-      @logger.debug("Successfully received pg = #{pg_id}, raw_size = #{raw.size}")
 
       begin
         file = Rush::Compression.decompress(raw)
@@ -48,6 +48,10 @@ module Rush
       rescue StandardError => e
         @logger.error("#{e.message}")
       end
+
+      response = { uuid: @uuid, success: 'true'}.to_json
+      client.send(response, 0)
+      @logger.debug("Successfully received pg = #{pg_id}, raw_size = #{raw.size}")
     end
 
     def query(hash, client)

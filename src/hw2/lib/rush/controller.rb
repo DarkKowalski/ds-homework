@@ -78,7 +78,8 @@ module Rush
       return nil unless hash['accept']
 
       @logger.debug("Send file #{localpath} to Node #{hash['uuid']}")
-      response = timeout_request(10, file, socket)
+      response = timeout_request(file.size, file, socket)
+      hash = parse_json(response)
       return nil unless hash['success'] == 'true'
 
       @logger.debug("Successfully sent #{localpath}")
@@ -186,7 +187,8 @@ module Rush
         path = File.join(localpath, f)
         data.push(path) if File.file?(path)
       end
-
+      data.sort!
+      @logger.debug("Distribute data = #{data}")
       data.each do |d|
         pg_id = File.basename(d, ".json").to_i
         osd = pick_osd(pg_id)
