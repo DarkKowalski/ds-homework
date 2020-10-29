@@ -29,11 +29,17 @@ module Rush
 
       raw = ''
       while recved = client.recv(Rush::MAX_RECV)
-        break if recved.size == 0
-
         @logger.debug("Reviced compressed file, size #{recved.size}")
+        break if recved.size == 0
+        response = { uuid: @uuid, continue: 'true'}.to_json
+        client.send(response, 0)
+        @logger.debug("Continue")
         raw += recved
       end
+
+      response = { uuid: @uuid, success: 'true'}.to_json
+      client.send(response, 0)
+      @logger.debug("Successfully received pg = #{pg_id}, raw_size = #{raw.size}")
 
       begin
         file = Rush::Compression.decompress(raw)

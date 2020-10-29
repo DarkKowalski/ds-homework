@@ -33,9 +33,10 @@ module Rush
         Timeout.timeout(time) do
           socket.send(request.to_s, 0)
           response = socket.recv(MAX_RECV)
+          @logger.debug("Timeout request, response = #{response}")
         end
       rescue Timeout::Error => e
-        @logger.error(e.message.to_s)
+        @logger.error("Time = #{time}, socket = #{socket}, err = #{e.message}")
         return nil
       end
       response
@@ -77,7 +78,11 @@ module Rush
       return nil unless hash['accept']
 
       @logger.debug("Send file #{localpath} to Node #{hash['uuid']}")
-      timeout_request(10, file, socket)
+      response = timeout_request(10, file, socket)
+      return nil unless hash['success'] == 'true'
+
+      @logger.debug("Successfully sent #{localpath}")
+      file.size
     end
 
     def query_node(id, pg_id, socket)
@@ -185,7 +190,7 @@ module Rush
       data.each do |d|
         pg_id = File.basename(d, ".json").to_i
         osd = pick_osd(pg_id)
-        puts "try send pg = #{pg_id}, path = #{d} to #{osd}"
+        @logger.debug "try send pg = #{pg_id}, path = #{d} to #{osd}"
         osd.each do |o|
           connect_node(o)
           send_file(d, pg_id, @sockets[o])
