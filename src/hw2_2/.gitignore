@@ -1,0 +1,5 @@
+/.vscode
+/dataset
+/splited
+dev_*
+Gemfile.lock
