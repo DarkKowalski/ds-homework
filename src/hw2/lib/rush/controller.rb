@@ -68,6 +68,7 @@ module Rush
       file = Rush::Compression.compress(File.read(localpath))
       request = { command: 'send_file', localpath: localpath.to_s, size: file.size.to_s, pg: pg_id}.to_json
       response = timeout_request(10, request, socket)
+      return nil if response.nil?
 
       hash = parse_json(response)
       return nil if hash.nil?
@@ -77,6 +78,17 @@ module Rush
 
       @logger.debug("Send file #{localpath} to Node #{hash['uuid']}")
       timeout_request(10, file, socket)
+    end
+
+    def query_node(id, pg_id, socket)
+      request = { command: 'query', id: id, pg: pg_id}.to_json
+      response = timeout_request(10, request, socket)
+      return nil if response.nil?
+
+      @logger.debug("Node #{hash['uuid']} responds #{response}")
+      return nil unless hash['found']
+
+      return hash['count']
     end
 
     def probe_node(ip, port)
@@ -180,6 +192,22 @@ module Rush
           disconnect_node(o)
         end
       end
+    end
+
+    def query(name)
+      id = Rush::FileId.hex(name)
+      pg_id = Rush::PG.id(id)
+      osd = pick_osd(pg_id)
+      @logger.debug("Query #{name}, id = #{id}, pg = #{pg_id}, osd = #{osd}")
+      count = nil;
+      osd.each do |o|
+        connect_node(o)
+        count = query_node(id, pg_id, @sockets[o])
+        disconnect_node(o)
+        return count unless count.nil?
+      end
+
+      count
     end
   end
 end

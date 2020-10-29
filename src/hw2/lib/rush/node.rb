@@ -28,15 +28,30 @@ module Rush
       return unless accept == true
 
       raw = client.recv(Rush::MAX_RECV)
-      @logger.debug("Reviced compressed file, size #{raw.size}")
+        @logger.debug("Reviced compressed file, size #{raw.size}")
 
-      file = Rush::Compression.decompress(raw)
-
-      FileUtils.mkdir_p "./saved_data/#{pg_id}"
-      File.write("./saved_data/#{pg_id}/data.json", file)
-
+        begin
+          file = Rush::Compression.decompress(raw)
+          FileUtils.mkdir_p "./saved_data/#{pg_id}"
+          File.write("./saved_data/#{pg_id}/data.json", file)
+        rescue StandardError => e
+          @logger.error("#{e.message}")
+        end
     end
 
+    def query(hash, client)
+      id = hash['id']
+      pg_id = hash['pg'].to_i
+
+      begin
+        file = File.read("./saved_data/#{pg_id}/data.json")
+        parsed = JSON.parse(file)
+        puts parsed
+      rescue StandardError => e
+        @logger.error("#{e.message}")
+      end
+    end
+  
     def listen
       loop do
         client = @server.accept
@@ -58,6 +73,8 @@ module Rush
           probe(client)
         when 'send_file'
           recv_file(hash, client)
+        when 'query'
+          query(hash, client)
         else
           @logger.warn("Invalid command #{hash['command']}")
         end

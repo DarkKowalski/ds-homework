@@ -5,7 +5,8 @@ require 'digest'
 module Rush
   module FileId
     def self.hex(str)
-      Digest::SHA256.hexdigest(str)
+      seed = str.delete(" \t\r\n").downcase
+      Digest::SHA256.hexdigest(seed)
     end
   end
 end
