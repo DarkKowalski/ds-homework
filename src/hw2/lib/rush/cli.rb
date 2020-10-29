@@ -44,6 +44,8 @@ module Rush
       when :node
         uuid = @options[:uuid]
         port = @options[:port]
+        return if uuid.nil? || port.nil?
+
         Rush::Node.new(uuid, port).listen
       when :split
         xml = @options[:file]

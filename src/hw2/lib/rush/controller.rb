@@ -3,6 +3,7 @@
 require 'socket'
 require 'timeout'
 require 'json'
+
 module Rush
   class Controller
     attr_reader :nodes, :sockets
@@ -217,6 +218,15 @@ module Rush
       count
     end
 
+    def connected?
+      if @nodes.empty?
+        puts 'You are not connected to any node'
+        return false
+      end
+
+      true
+    end
+
     def start
       valid = ['- distribute [path]', '- add [host] [port]', '- query [name]', '- info', '- quit']
       puts valid
@@ -226,30 +236,38 @@ module Rush
         @logger.debug("User Input: #{input}")
         command = input.split(' ').to_a
 
-        case command[0]
-        when 'add'
-          ip = command[1]
-          port = command[2]
-          result = add_node(ip, port)
-          puts 'Done' unless result.nil?
-        when 'query'
-          if @nodes.empty?
-            puts 'You are not connected to any node'
-            next
+        begin
+          case command[0]
+          when 'add'
+            ip = command[1]
+            port = command[2]
+            result = add_node(ip, port)
+            puts 'Done' unless result.nil?
+          when 'distribute'
+            next unless connected?
+
+            path = command[1]
+            result = distribute(path)
+            puts 'Done' unless result.nil?
+          when 'query'
+            next unless connected?
+
+            name = command.drop(1).join(' ')
+            result = query(name)
+            unless result.nil?
+              puts "Total: #{result['count']}"
+              puts result['list']
+            end
+          when 'info'
+            puts "Nodes: #{@nodes}"
+          when 'quit'
+            puts 'Quit!'
+            break
+          else
+            puts valid
           end
-          name = command.drop(1).join(' ')
-          result = query(name)
-          unless result.nil?
-            puts "Total: #{result['count']}"
-            puts result['list']
-          end
-        when 'info'
-          puts "Nodes: #{@nodes}"
-        when 'quit'
-          puts 'Quit!'
-          break
-        else
-          puts valid
+        rescue StandardError => e
+          @logger.error(e.message.to_s)
         end
       end
     end
