@@ -27,16 +27,21 @@ module Rush
       client.send(response, 0)
       return unless accept == true
 
-      raw = client.recv(Rush::MAX_RECV)
-        @logger.debug("Reviced compressed file, size #{raw.size}")
+      raw = ''
+      while recved = client.recv(Rush::MAX_RECV)
+        break if recved.size == 0
 
-        begin
-          file = Rush::Compression.decompress(raw)
-          FileUtils.mkdir_p "./saved_data/#{pg_id}"
-          File.write("./saved_data/#{pg_id}/data.json", file)
-        rescue StandardError => e
-          @logger.error("#{e.message}")
-        end
+        @logger.debug("Reviced compressed file, size #{recved.size}")
+        raw += recved
+      end
+
+      begin
+        file = Rush::Compression.decompress(raw)
+        FileUtils.mkdir_p "./saved_data/#{pg_id}"
+        File.write("./saved_data/#{pg_id}/data.json", file)
+      rescue StandardError => e
+        @logger.error("#{e.message}")
+      end
     end
 
     def query(hash, client)
