@@ -7,7 +7,7 @@ module Rush
 
       result = []
       keys = nodes.keys.to_a.sort
-      rand = Random.new(pg_id).rand(0..keys.size)
+      rand = Random.new(pg_id).rand(0...keys.size)
 
       num.times do |n|
         index = (rand + n) % keys.size
