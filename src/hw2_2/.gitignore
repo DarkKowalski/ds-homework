@@ -1,5 +1,5 @@
 /.vscode
 /dataset
-/splited
+/split
 dev_*
 Gemfile.lock
