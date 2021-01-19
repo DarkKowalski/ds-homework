@@ -1,0 +1,16 @@
+# frozen_string_literal: true
+
+require_relative '../lib/node'
+# load 'node_config.rb'
+
+# or
+
+# Node.configure do |config|
+#  config.service_host = 'localhost'
+#  config.service_port = '8001'
+#  config.gossip_port = '8001'
+#  config.gossip_introducer_host = 'localhost'
+#  config.gossip_introducer_port = '8000'
+# end
+
+Node::GossipServer.new.serve

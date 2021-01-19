@@ -1,0 +1,11 @@
+# frozen_string_literal: true
+
+source 'https://rubygems.org'
+
+ruby '~> 3.0.0'
+
+gem  'nokogiri', '~> 1.10'
+
+group :rubocop do
+  gem 'rubocop', '~> 0.90.0', require: false
+end
