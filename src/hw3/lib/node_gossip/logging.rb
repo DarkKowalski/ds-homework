@@ -2,10 +2,6 @@
 
 require 'logger'
 
-# frozen_string_literal: true
-
-require 'logger'
-
 module Node
   module Logging
     def self.included(base)
